@@ -1,0 +1,146 @@
+#!/usr/bin/env zsh
+#===============================================================================
+#
+#          FILE: weather
+#
+#         USAGE: weather [-h] [-i | -m | -M] [-t] [-o] [-f <FORMAT>] [-r] [-S] <LOCATION>
+#
+#      EXAMPLES:
+#                 weather -h -> Print the usage and exit.
+#                 weather -i "San Francisco"  -> Print weather info
+#                     from wttr.in for San Francisco in Imperial units.
+#                     Note that the quotes around LOCATION are not required.
+#                 weather -r New York  -> Print the weather for NYC, using
+#                     metric units and rich (V2) formatting.
+#                 weather -S -M "Los Angeles" -> Get weather for LA using
+#                     HTTPS and metric, with the windspeed in m/s.
+#                 weather -f 2 "Chicago" -> Print one-line of output in format
+#                     #2 for Chicago.
+#                 weather -o "San Diego" -> One line output for San Diego. Equivalent
+#                     to the -f 3 option.
+#                 weather -t London -> Show the weather for London in plain text,
+#                     no ANSI color sequences will be used.
+#
+#   DESCRIPTION: Fetch the weather from wttr.in using a simple CLI to handle
+#                formatting the URL.
+#
+#       OPTIONS:
+#                  -h: Print the usage and exit
+#                  -i: Use Imperial units
+#                  -m: Use metric units (default)
+#                  -M: Show windspeed in meters/sec
+#                  -r: Show data-rich V2 format
+#                  -S: Use HTTPS (default: http)
+#                  -f: Specify a one-line format number (1 - 4)
+#                  -o: One-line output only
+#                  -t: plain text mode; disable ANSI colors
+#
+#  REQUIREMENTS: curl
+#         NOTES: ---
+#        AUTHOR: Elliott Indiran <elliott.indiran@protonmail.com>
+#       CREATED: 2024-06-30
+#      REVISION: 1.0.0
+#
+#===============================================================================
+
+set -Eeuo pipefail
+
+usage() {
+    cat <<EOF
+      USAGE: weather [-h] [-i | -m | -M] [-f <FORMAT>] [-o] [-t] [-r] [-S] <LOCATION>
+
+   EXAMPLES:
+              weather -h -> Print the usage and exit.
+              weather -i "San Francisco"  -> Print weather info
+                  from wttr.in for San Francisco in Imperial units.
+                  Note that the quotes around LOCATION are not required.
+              weather -r New York  -> Print the weather for NYC, using
+                  metric units and rich (V2) formatting.
+              weather -S -M "Los Angeles" -> Get weather for LA using
+                  HTTPS and metric, with the windspeed in m/s.
+              weather -f 2 "Chicago" -> Print one-line of output in format
+                  #2 for Chicago.
+              weather -o "San Diego" -> One line output for San Diego. Equivalent
+                  to the -f 3 option.
+              weather -t London -> Show the weather for London in plain text,
+                  no ANSI color sequences will be used.
+
+DESCRIPTION: Fetch the weather from wttr.in using a simple CLI to handle
+             formatting the URL.
+
+    OPTIONS:
+               -h: Print the usage and exit
+               -i: Use Imperial units
+               -m: Use metric units (default)
+               -M: Show windspeed in meters/sec
+               -r: Show data-rich V2 format.
+               -S: Use HTTPS (default: http)
+               -f: Specify a one-line format number (1 - 4)
+               -o: One-line output only
+               -t: plain text mode; disable ANSI colors
+
+       NOTE: Requires curl
+EOF
+    exit "${1}"
+}
+
+base_url="wttr.in"
+url_prefix="http"
+units_flavor="m"
+rich_data_format=false
+one_line=false
+plain_text_mode=""
+format_number=3
+
+while getopts "himMSrtof:" option; do
+    case "${option}" in
+        h)
+            usage 0
+            ;;
+        i)
+            units_flavor="u"
+            ;;
+        m)
+            units_flavor="m"
+            ;;
+        M)
+            units_flavor="M"
+            ;;
+        r)
+            rich_data_format=true
+            ;;
+        S)
+            url_prefix="https"
+            ;;
+        t)
+            plain_text_mode="&T"
+            ;;
+        o)
+            one_line=true
+            ;;
+        f)
+            format_number="${OPTARG}"
+            one_line=true
+            ;;
+        *)
+            printf "Unknown option %s\n" "${option}"
+            usage 1
+            ;;
+    esac
+done
+shift $((OPTIND - 1))
+location=$@
+if [[ -z "${location}" ]]; then
+    echo "You must specify a location!"
+    exit 2
+fi
+location="${location/ /+}"
+
+
+if [[ "${rich_data_format}" == true ]]; then
+    curl "${url_prefix}://v2.${base_url}/${location}?${units_flavor}${plain_text_mode}"
+elif [[ "${one_line}" == true ]]; then
+    curl "${url_prefix}://${base_url}/${location}?${units_flavor}&format=${format_number}${plain_text_mode}"
+else
+    curl "${url_prefix}://${base_url}/${location}?${units_flavor}${plain_text_mode}"
+fi
