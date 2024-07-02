@@ -152,10 +152,18 @@ if [[ -n "${view_mode}" ]] && [[ -z "${view_modes[$view_mode]+x}" ]]; then
     exit 2
 fi
 
-if [[ "${rich_data_format}" == true ]]; then
-    curl "${url_prefix}://v2d.${base_url}/${location}?${view_mode}d${units_flavor}"
-elif [[ "${one_line}" == true ]]; then
-    curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}&format=${format_number}"
+if [[ "${one_line}" == true ]]; then
+    # In one-line mode, ie with the -o or -f flags, don't use head/tail
+    # to strip of anything.
+    curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}&format=${format_number}" 2> /dev/null
+elif [[ "${rich_data_format}" == true ]]; then
+    echo "┌────────────────────────────────────────────────────────────────────────┐"
+    # ^ replace header
+    curl "${url_prefix}://v2d.${base_url}/${location}?${view_mode}d${units_flavor}" 2> /dev/null | tail -n +2 | head -n -2
+elif [[ "${view_mode}" == "0" ]]; then
+    # In view-mode 0, dont use head/tail (as with one-line mode) as there is no
+    # header or footer.
+    curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}" 2> /dev/null
 else
-    curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}"
+    curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}" 2> /dev/null | tail -n +2 | head -n -2
 fi
