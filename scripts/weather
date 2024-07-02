@@ -161,9 +161,9 @@ elif [[ "${rich_data_format}" == true ]]; then
     # ^ replace header
     curl "${url_prefix}://v2d.${base_url}/${location}?${view_mode}d${units_flavor}" 2> /dev/null | tail -n +2 | head -n -2
 elif [[ "${view_mode}" == "0" ]]; then
-    # In view-mode 0, dont use head/tail (as with one-line mode) as there is no
-    # header or footer.
-    curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}" 2> /dev/null
+    # In view-mode 0, dont use head (with negative value, as with one-line mode)
+    # as there is no header. Do use tail for the header:
+    curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}" 2> /dev/null | tail -n +2
 else
     curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}" 2> /dev/null | tail -n +2 | head -n -2
 fi
