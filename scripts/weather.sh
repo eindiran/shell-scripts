@@ -1,27 +1,27 @@
 #!/usr/bin/env zsh
 #===============================================================================
 #
-#          FILE: weather
+#          FILE: weather.sh
 #
-#         USAGE: weather [-h] [-i | -m | -M] [-t] [-o] [-v <VIEW>] [-f <FORMAT>] [-r] [-S] <LOCATION>
+#         USAGE: weather.sh [-h] [-i | -m | -M] [-t] [-o] [-v <VIEW>] [-f <FORMAT>] [-r] [-S] <LOCATION>
 #
 #      EXAMPLES:
-#                 weather -h -> Print the usage and exit.
-#                 weather -i "San Francisco"  -> Print weather info
+#                 weather.sh -h -> Print the usage and exit.
+#                 weather.sh -i "San Francisco"  -> Print weather info
 #                     from wttr.in for San Francisco in Imperial units.
 #                     Note that the quotes around LOCATION are not required.
-#                 weather -r New York  -> Print the weather for NYC, using
+#                 weather.sh -r New York  -> Print the weather for NYC, using
 #                     metric units and rich (V2) formatting.
-#                 weather -S -M "Los Angeles" -> Get weather for LA using
+#                 weather.sh -S -M "Los Angeles" -> Get weather for LA using
 #                     HTTPS and metric, with the windspeed in m/s.
-#                 weather -f 2 "Chicago" -> Print one-line of output in format
+#                 weather.sh -f 2 "Chicago" -> Print one-line of output in format
 #                     #2 for Chicago.
-#                 weather -o "San Diego" -> One line output for San Diego. Equivalent
+#                 weather.sh -o "San Diego" -> One line output for San Diego. Equivalent
 #                     to the -f 3 option.
-#                 weather -t London -> Show the weather for London in plain text,
+#                 weather.sh -t London -> Show the weather for London in plain text,
 #                     no ANSI color sequences will be used.
-#                 weather -v 0 Beijing -> Show results using view option '0'. Default: 2
-#                 weather -v n Miami -> Output results for Miami in "narrow" mode
+#                 weather.sh -v 0 Beijing -> Show results using view option '0'. Default: 2
+#                 weather.sh -v n Miami -> Output results for Miami in "narrow" mode
 #
 #   DESCRIPTION: Fetch the weather from wttr.in using a simple CLI to handle
 #                formatting the URL.
@@ -50,7 +50,7 @@ set -Eeuo pipefail
 
 usage() {
     cat <<EOF
-      USAGE: weather [-h] [-i | -m | -M] [-v <VIEW>] [-f <FORMAT>] [-o] [-t] [-r] [-S] <LOCATION>
+      USAGE: weather.sh [-h] [-i | -m | -M] [-v <VIEW>] [-f <FORMAT>] [-o] [-t] [-r] [-S] <LOCATION>
 
 DESCRIPTION: Fetch the weather from wttr.in using a simple CLI to handle
              formatting the URL.
@@ -68,22 +68,22 @@ DESCRIPTION: Fetch the weather from wttr.in using a simple CLI to handle
              -v: Set the view mode (0, 1, 2, A d, F, n, q, Q, T)
 
    EXAMPLES:
-              weather -h -> Print the usage and exit.
-              weather -i "San Francisco"  -> Print weather info
+              weather.sh -h -> Print the usage and exit.
+              weather.sh -i "San Francisco"  -> Print weather info
                   from wttr.in for San Francisco in Imperial units.
                   Note that the quotes around LOCATION are not required.
-              weather -r New York  -> Print the weather for NYC, using
+              weather.sh -r New York  -> Print the weather for NYC, using
                   metric units and rich (V2) formatting.
-              weather -S -M "Los Angeles" -> Get weather for LA using
+              weather.sh -S -M "Los Angeles" -> Get weather for LA using
                   HTTPS and metric, with the windspeed in m/s.
-              weather -f 2 "Chicago" -> Print one-line of output in format
+              weather.sh -f 2 "Chicago" -> Print one-line of output in format
                   #2 for Chicago.
-              weather -o "San Diego" -> One line output for San Diego. Equivalent
+              weather.sh -o "San Diego" -> One line output for San Diego. Equivalent
                   to the -f 3 option.
-              weather -t London -> Show the weather for London in plain text,
+              weather.sh -t London -> Show the weather for London in plain text,
                   no ANSI color sequences will be used.
-              weather -v 0 Beijing -> Show results using view option '0'. Default: 2
-              weather -v n Miami -> Output results for Miami in "narrow" mode
+              weather.sh -v 0 Beijing -> Show results using view option '0'. Default: 2
+              weather.sh -v n Miami -> Output results for Miami in "narrow" mode
 
        NOTE: Requires curl
 EOF
