@@ -3,7 +3,7 @@
 #
 #          FILE: weather.sh
 #
-#         USAGE: weather.sh [-h] [-i | -m | -M] [-t] [-o] [-v <VIEW>] [-f <FORMAT>] [-r] [-S] <LOCATION>
+#         USAGE: weather.sh [-h] [-V] [-i | -m | -M] [-t] [-o] [-v <VIEW>] [-f <FORMAT>] [-r] [-S] <LOCATION>
 #
 #      EXAMPLES:
 #                 weather.sh -h -> Print the usage and exit.
@@ -28,6 +28,7 @@
 #
 #       OPTIONS:
 #                  -h: Print the usage and exit
+#                  -V: Verbose mode: print the wttr.in URL
 #                  -i: Use Imperial units
 #                  -m: Use metric units (default)
 #                  -M: Show windspeed in meters/sec
@@ -50,13 +51,14 @@ set -Eeuo pipefail
 
 usage() {
     cat <<EOF
-      USAGE: weather.sh [-h] [-i | -m | -M] [-v <VIEW>] [-f <FORMAT>] [-o] [-t] [-r] [-S] <LOCATION>
+      USAGE: weather.sh [-h] [-V] [-i | -m | -M] [-v <VIEW>] [-f <FORMAT>] [-o] [-t] [-r] [-S] <LOCATION>
 
 DESCRIPTION: Fetch the weather from wttr.in using a simple CLI to handle
              formatting the URL.
 
     OPTIONS:
              -h: Print the usage and exit
+             -V: Verbose mode: print the wttr.in URL
              -i: Use Imperial units
              -m: Use metric units (default)
              -M: Show windspeed in meters/sec
@@ -97,10 +99,11 @@ rich_data_format=false
 one_line=false
 format_number=3
 view_mode=""
+verbose=false
 
 declare -A view_modes=([0]=1 [1]=1 [2]=1 [A]=1 [d]=1 [F]=1 [n]=1 [q]=1 [Q]=1 [T]=1)
 
-while getopts "himMSrtof:v:" option; do
+while getopts "himMSrtoVf:v:" option; do
     case "${option}" in
         h)
             usage 0
@@ -133,6 +136,9 @@ while getopts "himMSrtof:v:" option; do
         v)
             view_mode="${OPTARG}"
             ;;
+        V)
+            verbose=true
+            ;;
         *)
             printf "Unknown option %s\n" "${option}"
             usage 1
@@ -152,18 +158,35 @@ if [[ -n "${view_mode}" ]] && [[ -z "${view_modes[$view_mode]+x}" ]]; then
     exit 2
 fi
 
+local wttrin_url
 if [[ "${one_line}" == true ]]; then
     # In one-line mode, ie with the -o or -f flags, don't use head/tail
     # to strip of anything.
-    curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}&format=${format_number}" 2> /dev/null
+    wttrin_url="${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}&format=${format_number}"
+    if [[ "${verbose}" == true ]]; then
+        echo "${wttrin_url}"
+    fi
+    curl "${wttrin_url}" 2> /dev/null
 elif [[ "${rich_data_format}" == true ]]; then
+    wttrin_url="${url_prefix}://v2d.${base_url}/${location}?${view_mode}${units_flavor}"
+    if [[ "${verbose}" == true ]]; then
+        echo "${wttrin_url}"
+    fi
     echo "┌────────────────────────────────────────────────────────────────────────┐"
     # ^ replace header
-    curl "${url_prefix}://v2d.${base_url}/${location}?${view_mode}d${units_flavor}" 2> /dev/null | tail -n +2 | head -n -2
+    curl "${wttrin_url}" 2> /dev/null | tail -n +2 | head -n -2
 elif [[ "${view_mode}" == "0" ]]; then
+    wttrin_url="${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}"
     # In view-mode 0, dont use head (with negative value, as with one-line mode)
     # as there is no header. Do use tail for the header:
-    curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}" 2> /dev/null | tail -n +2
+    if [[ "${verbose}" == true ]]; then
+        echo "${wttrin_url}"
+    fi
+    curl "${wttrin_url}" 2> /dev/null | tail -n +2
 else
-    curl "${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}" 2> /dev/null | tail -n +2 | head -n -2
+    wttrin_url="${url_prefix}://${base_url}/${location}?${view_mode}${units_flavor}"
+    if [[ "${verbose}" == true ]]; then
+        echo "${wttrin_url}"
+    fi
+    curl "${wttrin_url}" 2> /dev/null | tail -n +2 | head -n -2
 fi
